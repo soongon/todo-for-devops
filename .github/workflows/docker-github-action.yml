@@ -34,8 +34,7 @@ jobs:
             az webapp create \
               --resource-group rg-appservice-infrastructure-dev-04 \
               --plan asp-dev \
-              --name todo-webapp-dev \
-              --runtime "DOCKER|"
+              --name todo-webapp-dev
           fi
 
       - name: 🧩 Configure Web App to use Docker Image
