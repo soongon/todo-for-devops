@@ -1,0 +1,15 @@
+# docker-compose.yml
+
+version: "3.8"
+
+services:
+  todo-app:
+    container_name: todo-next-app  # 컨테이너 이름
+    build:
+      context: .  # 현재 디렉토리에서 Dockerfile 빌드
+    ports:
+      - "4000:3000"  # 로컬 3000번 포트를 컨테이너 3000번과 매핑
+    environment:
+      # PostgreSQL PaaS의 접속 정보 (환경변수)
+      DATABASE_URL: "postgresql://psqladmin:P@ssw0rd123!@psql-dev-nxt8j5rt.postgres.database.azure.com:5432/postgres?schema=public"
+    restart: unless-stopped  # 예기치 않게 종료되면 자동 재시작
