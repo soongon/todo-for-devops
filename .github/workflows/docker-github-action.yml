@@ -47,17 +47,17 @@ jobs:
             # 디렉토리 존재 보장
             mkdir -p /home/azureuser/app/nginx
             # 🔧 default.conf 파일 새로 생성
-            cat <<EOF > /home/azureuser/app/nginx/default.conf
+            cat <<'EOF' > /home/azureuser/app/nginx/default.conf
             server {
               listen 80;
               server_name _;
               location / {
                 proxy_pass http://todo-next-app:3000;
                 proxy_http_version 1.1;
-                proxy_set_header Upgrade \$http_upgrade;
+                proxy_set_header Upgrade $http_upgrade;
                 proxy_set_header Connection 'upgrade';
-                proxy_set_header Host \$host;
-                proxy_cache_bypass \$http_upgrade;
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
               }
             }
             EOF
