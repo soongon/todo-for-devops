@@ -27,7 +27,7 @@ jobs:
           username: azureuser
           key: ${{ secrets.VM_SSH_KEY }}
           source: ".env,docker-compose.yml,Dockerfile,nginx"
-          target: "/home/${{ secrets.VM_USER }}"
+          target: "/home/azureuser"
 
       - name: 🛠️ Build and Tag Docker Image
         run: |
