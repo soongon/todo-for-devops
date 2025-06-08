@@ -39,3 +39,10 @@ jobs:
             docker stop todo-next-app || true
             docker rm todo-next-app || true
             docker run -d --name todo-next-app -p 3000:3000 -e DATABASE_URL=${{ secrets.DATABASE_URL }} ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
+
+            docker stop nginx-reverse-proxy || true
+            docker rm nginx-reverse-proxy || true
+            docker run -d --name nginx-reverse-proxy -p 80:80 \
+              -v /home/azureuser/app/nginx/default.conf:/etc/nginx/conf.d/default.conf \
+              --link todo-next-app:todo-next-app \
+              nginx:stable-alpine
