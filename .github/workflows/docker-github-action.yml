@@ -34,7 +34,8 @@ jobs:
             az webapp create \
               --resource-group rg-appservice-infrastructure-dev-04 \
               --plan asp-dev \
-              --name todo-webapp-dev
+              --name todo-webapp-dev \
+              --deployment-container-image-name ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
           fi
 
       - name: ⚙️ Set App Service port setting
