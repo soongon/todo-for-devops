@@ -25,7 +25,7 @@ jobs:
         with:
           host: ${{ secrets.VM_HOST }}
           username: azureuser
-          key: ${{ secrets.VM_SSH_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: ".env,docker-compose.yml,Dockerfile,nginx"
           target: "/home/azureuser"
 
