@@ -32,8 +32,8 @@ jobs:
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.VM_HOST }}
-          username: "azureuser"
-          key: ${{ secrets.VM_SSH_KEY }}
+          username: azureuser
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
             docker stop todo-next-app || true
