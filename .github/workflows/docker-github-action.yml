@@ -43,8 +43,9 @@ jobs:
               ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
 
             # 🔥 디렉토리로 잘못 생성된 경우 강제 삭제
-            #sudo rm -rf /home/azureuser/app/nginx/default.conf
-
+            sudo rm -rf /home/azureuser/app/nginx/default.conf
+            # 디렉토리 존재 보장
+            mkdir -p /home/azureuser/app/nginx
             # 🔧 default.conf 파일 새로 생성
             cat <<EOF > /home/azureuser/app/nginx/default.conf
             server {
