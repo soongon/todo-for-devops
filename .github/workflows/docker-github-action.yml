@@ -37,13 +37,12 @@ jobs:
               --name todo-webapp-dev
           fi
 
-      - name: 🧩 Configure Web App to use Docker Image
+      - name: ⚙️ Set App Service port setting
         run: |
-          az webapp config container set \
+          az webapp config appsettings set \
             --name todo-webapp-dev \
             --resource-group rg-appservice-infrastructure-dev-04 \
-            --docker-custom-image-name ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest \
-            --docker-registry-server-url https://index.docker.io
+            --settings WEBSITES_PORT=3000
 
       - name: 🚀 Configure App Service to use Docker Hub
         run: |
