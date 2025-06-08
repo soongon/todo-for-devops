@@ -42,11 +42,21 @@ jobs:
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
               ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
 
-            # 🔥 디렉토리로 잘못 생성된 경우 강제 삭제
-            sudo rm -rf /home/azureuser/app/nginx/default.conf
-            # 디렉토리 존재 보장
+            # 🔍 현재 상태 확인
+            echo "=== 현재 디렉토리 상태 ==="
+            pwd
+            whoami
+  
+            # 🧹 기존 파일/디렉토리 완전 삭제
+            echo "=== 기존 파일 삭제 ==="
+            sudo rm -rf /home/azureuser/app
+            
+            # 📁 디렉토리 생성
+            echo "=== 디렉토리 생성 ==="
             mkdir -p /home/azureuser/app/nginx
-            # 🔧 default.conf 파일 새로 생성
+            ls -la /home/azureuser/app/nginx
+  
+            # 📝 파일 생성 (방법 1: echo 사용)
             echo "=== echo로 파일 생성 시도 ==="
             echo 'server {
               listen 80;
@@ -60,7 +70,14 @@ jobs:
                 proxy_cache_bypass $http_upgrade;
               }
             }' > /home/azureuser/app/nginx/default.conf
-        
+  
+            # ✅ 파일 생성 확인
+            echo "=== 파일 생성 확인 ==="
+            ls -la /home/azureuser/app/nginx/
+            file /home/azureuser/app/nginx/default.conf
+            cat /home/azureuser/app/nginx/default.conf
+            
+            # 🚀 nginx 실행
             docker stop nginx-reverse-proxy || true
             docker rm nginx-reverse-proxy || true
             docker run -d --name nginx-reverse-proxy -p 80:80 \
