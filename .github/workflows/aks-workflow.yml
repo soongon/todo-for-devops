@@ -1,0 +1,134 @@
+name: 🚀 Deploy to AKS
+
+on:
+  push:
+    branches: [aks-ci-cd-01]
+
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/todo-next-app
+  AKS_CLUSTER_NAME: aks-dev
+  RESOURCE_GROUP_AKS: rg-aks-infrastructure-dev-05
+  AKS_NAMESPACE: default
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout source
+        uses: actions/checkout@v4
+
+      # Docker 빌드 및 푸시 (기존과 동일)
+      - name: 🐳 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 🏗️ Build and push Docker image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE }}:latest .
+          docker push ${{ env.DOCKER_IMAGE }}:latest
+
+      # Azure 인증
+      - name: 🔐 Azure CLI login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # AKS 배포
+      - name: 🎯 Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ env.RESOURCE_GROUP_AKS }} \
+            --name ${{ env.AKS_CLUSTER_NAME }} \
+            --overwrite-existing
+
+      - name: 🗄️ Create/Update Database Secret
+        run: |
+          # GitHub Secret에서 DATABASE_URL 사용
+          kubectl create secret generic todo-db-secret \
+            --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --namespace=${{ env.AKS_NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: 🎭 Apply Kubernetes manifests
+        run: |
+          # Deployment 업데이트
+          cat <<EOF | kubectl apply -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: todo-app
+            namespace: ${{ env.AKS_NAMESPACE }}
+            labels:
+              app: todo-app
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: todo-app
+            template:
+              metadata:
+                labels:
+                  app: todo-app
+              spec:
+                containers:
+                - name: todo-app
+                  image: ${{ env.DOCKER_IMAGE }}:latest
+                  ports:
+                  - containerPort: 3000
+                  env:
+                  - name: DATABASE_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: todo-db-secret
+                        key: DATABASE_URL
+                  resources:
+                    requests:
+                      memory: "256Mi"
+                      cpu: "200m"
+                    limits:
+                      memory: "512Mi"
+                      cpu: "500m"
+                  readinessProbe:
+                    httpGet:
+                      path: /
+                      port: 3000
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: todo-service
+            namespace: ${{ env.AKS_NAMESPACE }}
+          spec:
+            selector:
+              app: todo-app
+            ports:
+            - port: 80
+              targetPort: 3000
+            type: LoadBalancer
+          EOF
+
+      - name: ⏳ Wait for deployment
+        run: |
+          kubectl rollout status deployment/todo-app --namespace=${{ env.AKS_NAMESPACE }} --timeout=300s
+
+      - name: 📊 Deployment Summary
+        run: |
+          echo "## 🚀 AKS Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Docker Image**: ${{ env.DOCKER_IMAGE }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "- **AKS Cluster**: ${{ env.AKS_CLUSTER_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Namespace**: ${{ env.AKS_NAMESPACE }}" >> $GITHUB_STEP_SUMMARY
+          
+          # AKS 서비스 URL 가져오기
+          EXTERNAL_IP=$(kubectl get service todo-service --namespace=${{ env.AKS_NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          if [ ! -z "$EXTERNAL_IP" ]; then
+            echo "- **App URL**: http://$EXTERNAL_IP" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status**: LoadBalancer IP pending..." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
