@@ -38,4 +38,4 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
             docker stop todo-next-app || true
             docker rm todo-next-app || true
-            docker run -d --name todo-next-app -p 3000:3000 --env-file .env.local ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
+            docker run -d --name todo-next-app -p 3000:3000 -e DATABASE_URL=${{ secrets.DATABASE_URL }} ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
