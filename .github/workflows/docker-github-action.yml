@@ -34,8 +34,14 @@ jobs:
             az webapp create \
               --resource-group rg-appservice-infrastructure-dev-04 \
               --plan asp-dev \
+              --name todo-webapp-dev
+
+            # 바로 컨테이너 설정
+            az webapp config container set \
               --name todo-webapp-dev \
-              --deployment-container-image-name ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest
+              --resource-group rg-appservice-infrastructure-dev-04 \
+              --docker-custom-image-name ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest \
+              --docker-registry-server-url https://index.docker.io
           fi
 
       - name: ⚙️ Set App Service port setting
@@ -50,8 +56,8 @@ jobs:
           az webapp config container set \
             --name todo-webapp-dev \
             --resource-group rg-appservice-infrastructure-dev-04 \
-            --docker-custom-image-name ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest \
-            --docker-registry-server-url https://index.docker.io
+            --container-image-name ${{ secrets.DOCKER_USERNAME }}/todo-next-app:latest \
+            --container-registry-url https://index.docker.io
 
       - name: 🔁 Restart App Service
         run: |
