@@ -30,6 +30,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
 COPY --from=builder /app/.env .env
 
-EXPOSE 3000
+ENV PORT=80
+EXPOSE 80
 
 CMD ["npm", "start"]
