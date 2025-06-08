@@ -34,7 +34,9 @@ jobs:
             az webapp create \
               --resource-group rg-appservice-infrastructure-dev-04 \
               --plan asp-dev \
-              --name todo-webapp-dev
+              --name todo-webapp-dev \
+              --multicontainer-config-type docker \
+              --multicontainer-config-file /dev/null
           fi
 
       - name: ⚙️ Set App Service port setting
