@@ -43,6 +43,7 @@ jobs:
             docker rm nginx-reverse-proxy || true
 
             mkdir -p /home/azureuser/app/nginx
+            rm -rf /home/azureuser/app/nginx/default.conf
             cat <<EOF > /home/azureuser/app/nginx/default.conf
             server {
                 listen 80;
